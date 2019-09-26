@@ -17,7 +17,7 @@ die(){
 }
 
 # set trap and call die()
-trap 'die' 1 2 3 15
+trap 'die' 15
 
 function fetch_data {
 	while true; do
@@ -32,30 +32,30 @@ function fetch_data {
 function doclean() {
 	a=0
 	while [ $a -lt  80 ]; do	
-		echo '' > $TTYS
-		((a++))
+		echo ' ' |tee $TTYS
+		let a=$a+1
 	done
 }
 
 function main() {
 	echo start
-	doclean
-	while true; do
-			for VAL in $INFOS; do
-				name=$(echo $VAL|awk -F: '{print $1}')
-				stat=$(echo $VAL|awk -F: '{print $2}')
-				val=$(cat /tmp/data.json | jq $stat)	
-				echo ${name}: $val	
-			done |lolcat |tee $TTYS
 
+	while true; do
+		#doclean
+		for VAL in $INFOS; do
+			name=$(echo $VAL|awk -F: '{print $1}')
+			stat=$(echo $VAL|awk -F: '{print $2}')
+			val=$(cat /tmp/data.json | jq $stat)	
+			echo ${name}: $val	
+		done |lolcat |tee $TTYS
 		sleep 1
 	done
 	echo you should not be here
 }	
 
-(fetch_data) &
+fetch_data &
 doclean
 main
-
+echo WTF2
 
 exit 0
