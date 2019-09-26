@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 CURL=$(command -v curl)
 CURLOPTS="-sL" 
 API="https://api.darksky.net/forecast"
@@ -10,6 +11,7 @@ INFOS="TEMP:.currently.temperature HUMIDITY:.currently.humidity"
 REFRESH=${REFRESH:-30}
 TTYS=${TTYS:-/dev/tty1}
 TTYME=$(tty)
+JQ=$(command -v jq||exit 99)
 die(){
   echo "I NEED TO GO"
   kill %1
@@ -45,7 +47,7 @@ function main() {
 		for VAL in $INFOS; do
 			name=$(echo $VAL|awk -F: '{print $1}')
 			stat=$(echo $VAL|awk -F: '{print $2}')
-			val=$(cat /tmp/data.json | jq $stat)	
+			val=$(cat /tmp/data.json | $JQ $stat)	
 			echo ${name}: $val	
 		done |lolcat |tee $TTYS
 		sleep 1
