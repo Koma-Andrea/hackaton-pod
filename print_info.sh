@@ -9,6 +9,7 @@ LON="${LONGITUDE:-16.416102}"
 INFOS="TEMP:.currently.temperature HUMIDITY:.currently.humidity"
 REFRESH=${REFRESH:-30}
 TTYS=${TTYS:-/dev/tty1}
+TTYME=$(tty)
 die(){
   echo "I NEED TO GO"
   kill %1
@@ -28,27 +29,33 @@ function fetch_data {
 	done
 }
 
-function clean() {
+function doclean() {
 	a=0
 	while [ $a -lt  80 ]; do	
 		echo '' > $TTYS
 		((a++))
 	done
 }
+
 function main() {
+	echo start
+	doclean
 	while true; do
-		clean
-		(
 			for VAL in $INFOS; do
 				name=$(echo $VAL|awk -F: '{print $1}')
 				stat=$(echo $VAL|awk -F: '{print $2}')
 				val=$(cat /tmp/data.json | jq $stat)	
 				echo ${name}: $val	
-			done
-		) | lolcat |tee $TTYS
+			done |lolcat |tee $TTYS
+
 		sleep 1
 	done
+	echo you should not be here
 }	
-fetch_data &
-clean
+
+(fetch_data) &
+doclean
 main
+
+
+exit 0
